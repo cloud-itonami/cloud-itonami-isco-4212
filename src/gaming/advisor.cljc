@@ -11,7 +11,10 @@
   A proposal: {:op :approve-wager-settlement|:approve-over-limit-payout|:approve-unverified-wager
                :effect :propose :table-id str :payout-amount number
                :patron-verified? boolean :stake kw :confidence n
-               :rationale str}")
+               :rationale str}"
+  ;; clojure.edn, not clojure.core/read-string: this parses untrusted
+  ;; advisor output, and the core reader executes #=(...) at read time.
+  (:require [clojure.edn :as edn]))
 
 (defprotocol Advisor
   (-advise [advisor store request] "request -> proposal map"))
@@ -41,7 +44,7 @@
 
 (defn- parse-proposal [content]
   (try
-    (let [p (read-string content)]
+    (let [p (edn/read-string content)]
       (if (map? p)
         (assoc p :effect :propose)
         {:op :unknown :effect :propose :confidence 0.0 :stake :high

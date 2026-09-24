@@ -1,0 +1,31 @@
+;; What this vertical's robot physically does, declared for
+;; kotoba.robotics.process (kotoba-lang/robotics). `kbb -M:physics` runs it.
+;;
+;; README "Robotics premise": a chip/card handling and table-management robot
+;; performs card dealing, chip counting and table settlement (ISCO 4212). Its
+;; physical work is sliding chip racks across the table at arm's length, and
+;; bringing chip fills from the cage to the table.
+;;
+;; Every number without a cited source is marked `estimate` in its :basis.
+{:physics/schema "itonami.physical-ai.spec.v1"
+ :repo "cloud-itonami/cloud-itonami-isco-4212"
+ :cases
+ [{:id :chip-rack-across-table
+   :kind :manipulator
+   :procedure "arm carries a chip rack at full reach across the table from the float to the settlement position"
+   :params {:l1-m 0.45 :l2-m 0.40 :m1-kg 3.5 :m2-kg 2.5
+            :from [0.75 0.05] :to [0.20 0.10] :duration-s 1.5 :steps 300}
+   :sweep {:param :payload-kg :values [0.5 1.0 2.0 3.0 5.0]}
+   :quantity :peak-tau1-nm
+   :limit {:max 60.0 :basis "estimate: continuous shoulder torque of a light collaborative arm (~5 kg class)"}
+   :boundary {:lo 0.1 :hi 20.0}}
+  {:id :chip-fill-from-cage
+   :kind :transport
+   :procedure "robot carries a chip fill from the cashier cage to a gaming table on the floor"
+   :params {:mass-kg 40.0 :payload-kg 10.0 :v-max-mps 0.8 :a-max-mps2 0.5
+            :brake-decel-mps2 0.8 :drive-force-n 80.0 :crr 0.03
+            :cog-height-m 0.50 :support-half-length-m 0.25}
+   :sweep {:param :distance-m :values [15.0 30.0 50.0 80.0 120.0]}
+   :quantity :cycle-time-s
+   :limit {:max 90.0 :basis "estimate: a table should not wait more than 90 s for a fill once it is authorised"}
+   :boundary {:lo 2.0 :hi 400.0}}]}
